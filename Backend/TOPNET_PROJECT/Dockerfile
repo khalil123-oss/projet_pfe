@@ -2,7 +2,11 @@
 FROM python:3.14-slim
 
 EXPOSE 8000
-
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    default-libmysqlclient-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 # Install pip requirements
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
