@@ -26,6 +26,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate, login
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
     permission_classes = []  # ou AllowAny si tu préfères
 
@@ -42,7 +43,7 @@ class LoginView(APIView):
             return Response({"success": True})
         return Response({"error": "Identifiants invalides ou pas admin"}, status=403)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class DashboardView(APIView):
     permission_classes = [IsAdminUser]
 

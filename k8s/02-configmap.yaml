@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: topnet-config
+  namespace: topnet
+data:
+  DB_HOST: "mariadb-service"
+  DB_PORT: "3306"
+  DB_NAME: "topnet_db"
+  DJANGO_SETTINGS_MODULE: "TOPNET_PROJECT.settings"
+  ALLOWED_HOSTS: "*"
+  # Le frontend appelle le backend via NodePort en local
+  # En production, remplacer par le domaine réel
+  VITE_API_URL: "http://192.168.49.2:30800"
+ 

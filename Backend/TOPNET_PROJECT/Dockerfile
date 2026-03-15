@@ -19,4 +19,6 @@ COPY . /app
 
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["sh", "-c", "until python -c \"import MySQLdb; MySQLdb.connect(host='db', user='topnet_user', passwd='123', db='topnet_db')\" 2>/dev/null; do echo 'Waiting for DB...' && sleep 3; done && echo 'DB ready!' && python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]
+      
+
