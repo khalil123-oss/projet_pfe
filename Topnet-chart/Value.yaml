@@ -1,0 +1,19 @@
+replicaCount:
+  frontend: 2
+  backend: 2
+
+image:
+  frontend: topnet-frontend:latest
+  backend: topnet-backend:latest
+  db: mariadb:latest
+
+db:
+  name: topnet_db
+  user: topnet_user
+  password: "123"
+
+service:
+  frontend:
+    nodePort: 30080
+  backend:
+    nodePort: 30800

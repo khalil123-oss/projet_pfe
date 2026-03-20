@@ -11,5 +11,5 @@ data:
   ALLOWED_HOSTS: "*"
   # Le frontend appelle le backend via NodePort en local
   # En production, remplacer par le domaine réel
-  VITE_API_URL: "http://192.168.49.2:30800"
+ 
  

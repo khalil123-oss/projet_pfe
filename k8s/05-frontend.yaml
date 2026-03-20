@@ -1,7 +1,4 @@
 ---
-# ─────────────────────────────────────────────────────────────
-# Deployment React Frontend (nginx)
-# ─────────────────────────────────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,20 +25,15 @@ spec:
     spec:
       containers:
         - name: frontend
-          # ⚠️  Remplacer par ton image Docker Hub ou registry local Minikube
           image: topnet-frontend:latest
-          imagePullPolicy: IfNotPresent   # Pour Minikube local
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
-          # VITE_API_URL est injecté au BUILD de l'image.
-          # Pour un env dynamique au runtime, utiliser une nginx conf
-          # qui lit une variable window.__RUNTIME_CONFIG__ (voir README).
+          # BACKEND_HOST injecté au runtime par nginx
+          # nginx.conf.template remplace ${BACKEND_HOST} automatiquement
           env:
-            - name: VITE_API_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: topnet-config
-                  key: VITE_API_URL
+            - name: BACKEND_HOST
+              value: "backend-service"   # ← nom du Service K8s Django
           readinessProbe:
             httpGet:
               path: /
@@ -61,11 +53,8 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "250m"
- 
+
 ---
-# ─────────────────────────────────────────────────────────────
-# Service Frontend (NodePort pour tests Minikube)
-# ─────────────────────────────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
@@ -81,12 +70,9 @@ spec:
     - name: http
       port: 80
       targetPort: 80
-      nodePort: 30080    # Accessible via minikube_ip:30080
- 
+      nodePort: 30080
+
 ---
-# ─────────────────────────────────────────────────────────────
-# HorizontalPodAutoscaler Frontend
-# ─────────────────────────────────────────────────────────────
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
