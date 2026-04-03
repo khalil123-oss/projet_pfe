@@ -1,36 +1,32 @@
----
-# ─────────────────────────────────────────────────────────────
-# PersistentVolumeClaim pour les données MariaDB
-# ─────────────────────────────────────────────────────────────
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mariadb-pvc
-  namespace: topnet
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: mariadb
+    managed-by: helm
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
-  # Sur Minikube, le StorageClass "standard" est dispo par défaut
-  storageClassName: standard
+      storage: {{ .Values.db.storage }}
+  storageClassName: {{ .Values.db.storageClass }}
  
 ---
-# ─────────────────────────────────────────────────────────────
-# StatefulSet MariaDB (1 replica stable)
-# ─────────────────────────────────────────────────────────────
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mariadb
-  namespace: topnet
+  namespace: {{ .Values.namespace }}
   labels:
     app: mariadb
     tier: database
+    managed-by: helm
 spec:
   serviceName: "mariadb-service"
-  replicas: 1
+  replicas: {{ .Values.replicaCount.db }}
   selector:
     matchLabels:
       app: mariadb
@@ -42,9 +38,10 @@ spec:
     spec:
       containers:
         - name: mariadb
-          image: mariadb:latest
+          image: {{ .Values.image.db }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 3306
+            - containerPort: {{ .Values.service.db.port }}
               name: mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
@@ -70,7 +67,6 @@ spec:
           volumeMounts:
             - name: mariadb-storage
               mountPath: /var/lib/mysql
-          # Health checks — utilise mariadb-admin (dispo dans mariadb:latest)
           readinessProbe:
             exec:
               command:
@@ -94,32 +90,30 @@ spec:
             periodSeconds: 20
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: {{ .Values.resources.db.requests.memory | quote }}
+              cpu: {{ .Values.resources.db.requests.cpu | quote }}
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: {{ .Values.resources.db.limits.memory | quote }}
+              cpu: {{ .Values.resources.db.limits.cpu | quote }}
       volumes:
         - name: mariadb-storage
           persistentVolumeClaim:
             claimName: mariadb-pvc
  
 ---
-# ─────────────────────────────────────────────────────────────
-# Service MariaDB (ClusterIP — interne uniquement)
-# ─────────────────────────────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
   name: mariadb-service
-  namespace: topnet
+  namespace: {{ .Values.namespace }}
   labels:
     app: mariadb
+    managed-by: helm
 spec:
-  type: ClusterIP
+  type: {{ .Values.service.db.type }}
   selector:
     app: mariadb
   ports:
     - name: mysql
-      port: 3306
-      targetPort: 3306
+      port: {{ .Values.service.db.port }}
+      targetPort: {{ .Values.service.db.port }}

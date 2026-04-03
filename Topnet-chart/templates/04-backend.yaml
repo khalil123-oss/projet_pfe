@@ -1,21 +1,18 @@
 ---
-# ─────────────────────────────────────────────────────────────
-# Deployment Django Backend
-# ─────────────────────────────────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: topnet
+  namespace: {{ .Values.namespace }}
   labels:
     app: backend
     tier: api
+    managed-by: helm
 spec:
-  replicas: 2
+  replicas: {{ .Values.replicaCount.backend }}
   selector:
     matchLabels:
       app: backend
-  # Stratégie de rolling update sans downtime
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -27,7 +24,6 @@ spec:
         app: backend
         tier: api
     spec:
-      # Attendre que la DB soit prête avant de démarrer
       initContainers:
         - name: wait-for-db
           image: busybox:1.35
@@ -35,20 +31,18 @@ spec:
             - sh
             - "-c"
             - |
-              until nc -z mariadb-service 3306; do
+              until nc -z {{ .Values.db.host }} {{ .Values.service.db.port }}; do
                 echo "Waiting for MariaDB...";
                 sleep 3;
               done;
               echo "MariaDB is ready!"
       containers:
         - name: backend
-          # ⚠️  Remplacer par ton image Docker Hub ou registry local Minikube
-          image: topnet-backend:latest
-          imagePullPolicy: IfNotPresent   # Pour Minikube local
+          image: {{ .Values.image.backend }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 8000
+            - containerPort: {{ .Values.service.backend.port }}
           env:
-            # DB credentials depuis le Secret
             - name: DB_HOST
               valueFrom:
                 configMapKeyRef:
@@ -84,83 +78,79 @@ spec:
                 configMapKeyRef:
                   name: topnet-config
                   key: ALLOWED_HOSTS
-          # Job de migration Django au démarrage du conteneur
           command:
             - sh
             - "-c"
             - |
               python manage.py migrate --noinput &&
-              python manage.py runserver 0.0.0.0:8000
+              python manage.py runserver 0.0.0.0:{{ .Values.service.backend.port }}
           readinessProbe:
             httpGet:
-              path:  /admin/       # ⚠️  Adapte ce endpoint à ton projet
-              port: 8000
-            initialDelaySeconds: 15
-            periodSeconds: 10
+              path: {{ .Values.probes.backend.readiness.path }}
+              port: {{ .Values.service.backend.port }}
+            initialDelaySeconds: {{ .Values.probes.backend.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.backend.readiness.periodSeconds }}
           livenessProbe:
             httpGet:
-              path: /admin/
-              port: 8000
-            initialDelaySeconds: 30
-            periodSeconds: 20
+              path: {{ .Values.probes.backend.liveness.path }}
+              port: {{ .Values.service.backend.port }}
+            initialDelaySeconds: {{ .Values.probes.backend.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.backend.liveness.periodSeconds }}
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: {{ .Values.resources.backend.requests.memory | quote }}
+              cpu: {{ .Values.resources.backend.requests.cpu | quote }}
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: {{ .Values.resources.backend.limits.memory | quote }}
+              cpu: {{ .Values.resources.backend.limits.cpu | quote }}
  
 ---
-# ─────────────────────────────────────────────────────────────
-# Service Backend (NodePort pour tests Minikube)
-# ─────────────────────────────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
   name: backend-service
-  namespace: topnet
+  namespace: {{ .Values.namespace }}
   labels:
     app: backend
+    managed-by: helm
 spec:
-  type: NodePort
+  type: {{ .Values.service.backend.type }}
   selector:
     app: backend
   ports:
     - name: http
-      port: 8000
-      targetPort: 8000
-      nodePort: 30800    # Accessible via minikube_ip:30800
+      port: {{ .Values.service.backend.port }}
+      targetPort: {{ .Values.service.backend.port }}
+      nodePort: {{ .Values.service.backend.nodePort }}
  
 ---
-# ─────────────────────────────────────────────────────────────
-# HorizontalPodAutoscaler Backend
-# ─────────────────────────────────────────────────────────────
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: backend-hpa
-  namespace: topnet
+  namespace: {{ .Values.namespace }}
+  labels:
+    managed-by: helm
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: backend
-  minReplicas: 2
-  maxReplicas: 5
+  minReplicas: {{ .Values.hpa.backend.minReplicas }}
+  maxReplicas: {{ .Values.hpa.backend.maxReplicas }}
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: {{ .Values.hpa.backend.cpuUtilization }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 80
+          averageUtilization: {{ .Values.hpa.backend.memoryUtilization }}
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 60

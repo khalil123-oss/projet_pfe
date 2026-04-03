@@ -1,0 +1,115 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: frontend
+    tier: web
+    managed-by: helm
+spec:
+  replicas: {{ .Values.replicaCount.frontend }}
+  selector:
+    matchLabels:
+      app: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: frontend
+        tier: web
+    spec:
+      containers:
+        - name: frontend
+          image: {{ .Values.image.frontend }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.frontend.port }}
+          env:
+            - name: BACKEND_HOST
+              value: {{ .Values.nginx.backendHost | quote }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.frontend.readiness.path }}
+              port: {{ .Values.service.frontend.port }}
+            initialDelaySeconds: {{ .Values.probes.frontend.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.frontend.readiness.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.frontend.liveness.path }}
+              port: {{ .Values.service.frontend.port }}
+            initialDelaySeconds: {{ .Values.probes.frontend.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.frontend.liveness.periodSeconds }}
+          resources:
+            requests:
+              memory: {{ .Values.resources.frontend.requests.memory | quote }}
+              cpu: {{ .Values.resources.frontend.requests.cpu | quote }}
+            limits:
+              memory: {{ .Values.resources.frontend.limits.memory | quote }}
+              cpu: {{ .Values.resources.frontend.limits.cpu | quote }}
+ 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: frontend
+    managed-by: helm
+spec:
+  type: {{ .Values.service.frontend.type }}
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: {{ .Values.service.frontend.port }}
+      targetPort: {{ .Values.service.frontend.port }}
+      nodePort: {{ .Values.service.frontend.nodePort }}
+ 
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: {{ .Values.namespace }}
+  labels:
+    managed-by: helm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: {{ .Values.hpa.frontend.minReplicas }}
+  maxReplicas: {{ .Values.hpa.frontend.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.frontend.cpuUtilization }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.frontend.memoryUtilization }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120

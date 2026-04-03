@@ -1,5 +1,13 @@
 apiVersion: v2
 name: topnet
-description: Application Topnet — React + Django + MariaDB
+description: Application Topnet — React + Django + MariaDB sur Kubernetes
+type: application
 version: 1.0.0
 appVersion: "1.0.0"
+keywords:
+  - react
+  - django
+  - mariadb
+  - kubernetes
+maintainers:
+  - name: khalil
