@@ -1,0 +1,26 @@
+/* Global - Pour compenser la navbar fixed/sticky */
+body {
+    padding-top: 80px;
+    /* ← hauteur de ta navbar + marge supplémentaire */
+    /* ou margin-top: 80px; si navbar n'est pas fixed */
+}
+
+/* Si ta navbar a une classe (ex: .navbar) */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    /* ← hauteur réelle de ta navbar */
+    z-index: 1000;
+    background: var(--bg-header);
+    /* ton bleu foncé */
+}
+
+/* Assure-toi que le contenu commence bien en dessous */
+main,
+.form-wrapper {
+    padding-top: 20px;
+    /* marge supplémentaire pour respirer */
+}

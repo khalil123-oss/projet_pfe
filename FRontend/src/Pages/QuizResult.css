@@ -1,0 +1,76 @@
+.result-page {
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+}
+
+.result-card {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 480px;
+    padding: 3rem 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.result-card h1 {
+    color: var(--primary);
+    font-size: 2.4rem;
+    margin-bottom: 2rem;
+}
+
+.score-display {
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: var(--accent);
+    margin: 1rem 0 1.5rem;
+}
+
+.score {
+    color: var(--primary);
+}
+
+.total {
+    color: var(--muted);
+    font-size: 3rem;
+}
+
+.percentage {
+    font-size: 1.6rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+}
+
+.result-emoji {
+    font-size: 5rem;
+    margin: 1rem 0;
+}
+
+.result-message {
+    font-size: 1.6rem;
+    color: var(--text);
+    margin: 1.5rem 0 2.5rem;
+}
+
+.replay-button {
+    padding: 1.2rem 3.5rem;
+    background: var(--accent);
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(255, 98, 0, 0.35);
+    transition: all 0.3s;
+}
+
+.replay-button:hover {
+    background: var(--accent-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 14px 35px rgba(255, 98, 0, 0.5);
+}

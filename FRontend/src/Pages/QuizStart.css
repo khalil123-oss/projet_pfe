@@ -1,0 +1,191 @@
+:root {
+    --bg: #0a0e14;
+    --card-bg: #11151c;
+    --text: #e2e8f0;
+    --text-light: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border: #1e293b;
+    --accent: #f97316;
+    /* orange vif */
+    --accent-dark: #ea580c;
+    --accent-glow: rgba(249, 115, 22, 0.32);
+    --accent-soft: rgba(249, 115, 22, 0.16);
+    --correct: #22c55e;
+    --wrong: #ef4444;
+    --radius: 14px;
+    --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-sm: 0 6px 24px rgba(0, 0, 0, 0.55);
+    --shadow-md: 0 12px 40px -10px rgba(249, 115, 22, 0.25);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.quiz-page {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.quiz-card {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 720px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 40px 36px;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.quiz-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Progression */
+.progress {
+    margin-bottom: 32px;
+    text-align: center;
+    font-size: 1.05rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.progress-bar {
+    height: 10px;
+    background: var(--border);
+    border-radius: 999px;
+    margin-top: 12px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #fb923c);
+    border-radius: 999px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
+}
+
+/* Image de question */
+.question-img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Question */
+.question-text {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 32px;
+    color: white;
+    text-align: center;
+    letter-spacing: -0.3px;
+}
+
+/* Réponses */
+.answers {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.answer-btn {
+    width: 100%;
+    padding: 18px 24px;
+    font-size: 1.08rem;
+    font-weight: 500;
+    text-align: left;
+    background: #0f1620;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.answer-btn:hover {
+    background: #17212f;
+    border-color: var(--accent);
+    color: white;
+    transform: translateX(6px);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.18);
+}
+
+.answer-btn.selected {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 600;
+}
+
+/* Feedback après sélection (optionnel - à activer si tu veux montrer correct/incorrect immédiatement) */
+.answer-btn[data-correct="true"] {
+    border-color: var(--correct);
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--correct);
+    font-weight: 600;
+}
+
+.answer-btn[data-wrong="true"] {
+    border-color: var(--wrong);
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--wrong);
+}
+
+/* Boutons navigation */
+.nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.btn {
+    flex: 1;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    border: none;
+}
+
+.prev-btn {
+    background: #1e293b;
+    color: var(--text-light);
+}
+
+.prev-btn:hover:not(:disabled) {
+    background: #253549;
+    transform: translateY(-2px);
+}
+
+.next-btn {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: white;
+    box-shadow: 0 6px 24px rgba(249, 115, 22, 0.35);
+}
+
+.next-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(249, 115, 22, 0.45);
+    background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+}
